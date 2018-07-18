@@ -1,0 +1,79 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
+       default-lazy-init="true">
+
+    <description>Shiro安全配置</description>
+
+    <bean id="passwordUtil" class="com.lzy.base.utils.PasswordUtil"/>
+
+    <bean id="userRealm" class="com.lzy.base.service.UserRealm" depends-on="passwordUtil"/>
+
+    <bean id="myCaptchaFilter" class="com.lzy.base.utils.security.FormAuthenticationCaptchaFilter"/>
+
+    <!-- Shiro Filter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="${adminPath}/login"/>
+        <property name="successUrl" value="${adminPath}/index"/>
+        <property name="unauthorizedUrl" value="/WEB-INF/views/error/403"/>
+        <property name="filters">
+            <map>
+                <entry key="authc" value-ref="myCaptchaFilter"/>
+            </map>
+        </property>
+        <property name="filterChainDefinitions">
+            <value>
+                /bootstrap/** = anon
+                /global/** = anon
+                /assets/** = anon
+                /example/** = anon
+                ${adminPath}/test = anon
+                ${adminPath}/menu = anon
+                ${adminPath}/login = authc
+                ${adminPath}/logout = logout
+                ${adminPath}/** = user
+            </value>
+        </property>
+    </bean>
+
+    <bean id="cacheManager" class="com.lzy.backend.shiro.RedisCacheManager"/>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="userRealm"/>
+        <property name="cacheManager" ref="cacheManager"/>
+        <!--将session托管给redis进行管理，便于搭建集群系统-->
+        <property name="sessionManager" ref="webSessionManager"/>
+    </bean>
+    <!--redis管理session-->
+    <bean id="webSessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="sessionDAO" ref="redisSessionDao"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="globalSessionTimeout" value="${shiro.sessionTimeout}"/>
+        <property name="sessionIdCookie" ref="simpleCookie"/>
+        <!-- 定时检查失效的session -->
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+    </bean>
+
+    <!-- sessionIdCookie的实现,用于重写覆盖容器默认的JSESSIONID -->
+    <bean id="simpleCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!-- cookie的name,对应的默认是 JSESSIONID -->
+        <constructor-arg name="name" value="xsid"/>
+        <property name="maxAge" value="-1"/>
+        <!-- jsessionId的path为 / 用于多个系统共享jsessionId -->
+        <property name="path" value="/"/>
+    </bean>
+
+    <bean id="redisSessionDao" class="com.lzy.backend.shiro.RedisSessionManager">
+        <property name="expire" value="${shiro.sessionTimeout}"/>
+    </bean>
+
+    <!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- AOP式方法级权限检查  -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor">
+        <property name="proxyTargetClass" value="false"/>
+    </bean>
+
+</beans>

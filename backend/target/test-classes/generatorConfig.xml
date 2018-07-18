@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <classPathEntry
+            location="/Users/ellengou/work/repo/mysql/mysql-connector-java/5.1.35/mysql-connector-java-5.1.35.jar"/>
+    <!-- mvn mybatis-generator:generate -->
+
+    <context id="oneHour" targetRuntime="MyBatis3">
+
+        <!-- 配置插件 -->
+        <plugin type="org.mybatis.generator.plugins.MysqlPaginationPlugin"/>
+        <!--数据库连接的信息：驱动类、连接地址、用户名、密码 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://120.55.120.167:3306/lzy_o2o_test"
+                        userId="developer" password="LZhy@5w3d6#kewrsdg">
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>                                            <!-- 类型解析器 -->
+        </javaTypeResolver>
+
+        <!-- 配置model生成位置 -->
+        <javaModelGenerator targetPackage="com.lzy.mobile.constants"
+                            targetProject="src/main/java">
+            <property name="rootClass" value="com.lzy.framework.template.BaseDomain"/>
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- 配置sqlmap生成位置 -->
+        <sqlMapGenerator targetPackage="com.lzy.mobile.dao"
+                         targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- 配置mapper接口生成位置 -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.lzy.mobile.dao" targetProject="src/main/java">
+            <property name="rootInterface" value="com.lzy.framework.template.BaseDao"/>
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 基础信息相关表  -->
+        <table tableName="XXX" domainObjectName="XXX"
+               enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false"
+               enableSelectByExample="false" selectByExampleQueryId="false">
+            <generatedKey column="id" sqlStatement="Mysql" type="post" identity="true"/>
+        </table>
+
+    </context>
+</generatorConfiguration>

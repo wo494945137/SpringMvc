@@ -1,0 +1,68 @@
+<!--<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/rabbit
+    http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd">
+
+    &lt;!&ndash; 新方法&ndash;&gt;
+    <bean id="jsonMessageConverter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter"/>-->
+
+    <!--<rabbit:connection-factory-->
+            <!--id="connectionFactory"-->
+            <!--host="${rabbit.host}"-->
+            <!--port="${rabbit.port}"-->
+            <!--username="${rabbit.username}"-->
+            <!--password="${rabbit.password}"-->
+            <!--virtual-host="${virtual_host}"-->
+            <!--publisher-confirms="${rabbit.confirms}"-->
+    <!--/>-->
+
+    <!--<rabbit:admin connection-factory="connectionFactory" id="rabbitAdmin"/>-->
+
+    <!--&lt;!&ndash; 给模板指定转换器 &ndash;&gt;&lt;!&ndash; mandatory必须设置true,return callback才生效 &ndash;&gt;-->
+    <!--<rabbit:template id="amqpTemplate" connection-factory="connectionFactory"-->
+                     <!--return-callback="rabbitmqReturnCallBackListener"-->
+                     <!--confirm-callback="rabbitmqConfirmCallBackListener"-->
+                     <!--mandatory="true"-->
+                     <!--message-converter="jsonMessageConverter"-->
+    <!--/>-->
+
+    <!--&lt;!&ndash;公共队列定义&ndash;&gt;-->
+    <!--<rabbit:queue id="COMMON_TEST_QUEUE_1" name="COMMON_TEST_QUEUE_1"/>-->
+    <!--<rabbit:queue id="COMMON_TEST_QUEUE_2" name="COMMON_TEST_QUEUE_2"/>-->
+
+    <!--&lt;!&ndash;票务队列定义&ndash;&gt;-->
+    <!--&lt;!&ndash;火车票自动失效消息队列  (zset:queue:train:changeorder:paytime) QUEUE_TRAIN_CHANGEORDER_PAYTIME  &ndash;&gt;-->
+    <!--<rabbit:queue id="QUEUE_TRAIN_CHANGEORDER_PAYTIME" name="QUEUE_TRAIN_CHANGEORDER_PAYTIME" auto-declare="true" />-->
+    <!--<rabbit:queue id="TICKET_TEST_QUEUE_2" name="TICKET_TEST_QUEUE_2"/>-->
+
+    <!--&lt;!&ndash;公用点对点交换机定义&ndash;&gt;-->
+    <!--<rabbit:topic-exchange name="TOPIC-EXCHANGE-COMMON" id="TOPIC-EXCHANGE-COMMON" durable="true" auto-delete="false">-->
+        <!--<rabbit:bindings>-->
+            <!--<rabbit:binding queue="COMMON_TEST_QUEUE_1" pattern="COMMON_TEST_QUEUE_1"/>-->
+            <!--<rabbit:binding queue="COMMON_TEST_QUEUE_2" pattern="COMMON_TEST_QUEUE_2"/>-->
+        <!--</rabbit:bindings>-->
+    <!--</rabbit:topic-exchange>-->
+
+    <!--&lt;!&ndash;票务点对点交换机定义&ndash;&gt;-->
+    <!--<rabbit:topic-exchange name="TOPIC-EXCHANGE-TICKET" id="TOPIC-EXCHANGE-TICKET" durable="true" auto-delete="false">-->
+        <!--<rabbit:bindings>-->
+            <!--<rabbit:binding queue="QUEUE_TRAIN_CHANGEORDER_PAYTIME" pattern="QUEUE_TRAIN_CHANGEORDER_PAYTIME"/>-->
+            <!--<rabbit:binding queue="TICKET_TEST_QUEUE_2" pattern="TICKET_TEST_QUEUE_2"/>-->
+        <!--</rabbit:bindings>-->
+    <!--</rabbit:topic-exchange>-->
+
+    <!-- 配置consumer, 监听的类和queue的对应关系
+     queues 需要指定前面定义的queue id 多个 由 逗号隔开
+     -->
+    <!--<rabbit:listener-container-->
+            <!--connection-factory="connectionFactory" acknowledge="manual">-->
+        <!--<rabbit:listener queues="COMMON_TEST_QUEUE_1,COMMON_TEST_QUEUE_2" method="onMessage"-->
+                         <!--ref="rabbitmqCommonConsumerConfirmListener"/>-->
+        <!--<rabbit:listener queues="QUEUE_TRAIN_CHANGEORDER_PAYTIME,TICKET_TEST_QUEUE_2" method="onMessage"-->
+                         <!--ref="rabbitmqTicketConsumerConfirmListener"/>-->
+    <!--</rabbit:listener-container>-->
+
+</beans>

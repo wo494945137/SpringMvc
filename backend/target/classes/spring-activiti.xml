@@ -1,0 +1,41 @@
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  	<!-- 单独运行的流程引擎 -->
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSourceS" />
+		<!-- 如果没使用默认的H2数据库就必须设置这项 -->
+		<property name="databaseType" value="mysql"></property>
+		<!-- true: 构建流程引擎时，执行检查，如果需要就执行更新。 如果表不存在，就创建 -->
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="jobExecutorActivate" value="false" />
+		<!-- 建表策略 true: 构建流程引擎时，执行检查，如果需要就执行更新。 如果表不存在，就创建 -->
+		<property name="databaseSchemaUpdate" value="false" />
+		<!-- id生成策略配置修改成内置的StrongUuidGenerator，避免高并发下自增策略可能产生主键冲突的问题-->
+		<property name="idGenerator" ref="uuidGenerator"/>
+		<property name="history" value="full" />
+	</bean>
+	
+	<bean id="uuidGenerator" class="org.activiti.engine.impl.persistence.StrongUuidGenerator"/>
+
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+	</bean>
+
+	<bean id="repositoryService" factory-bean="processEngine"
+		factory-method="getRepositoryService" />
+	<bean id="runtimeService" factory-bean="processEngine"
+		factory-method="getRuntimeService" />
+	<bean id="taskServiceBPM" factory-bean="processEngine"
+		factory-method="getTaskService" />
+	<bean id="historyService" factory-bean="processEngine"
+		factory-method="getHistoryService" />
+	<bean id="managementService" factory-bean="processEngine"
+		factory-method="getManagementService" />
+	<bean id="identityService" factory-bean="processEngine"
+		factory-method="getIdentityService" />
+		
+  	<bean id="BPMEngine" class="com.lzy.common.service.impl.BPMEngineServiceImpl">
+  	</bean>
+</beans>

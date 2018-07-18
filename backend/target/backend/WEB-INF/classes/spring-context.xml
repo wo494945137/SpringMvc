@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <description>Spring公共配置</description>
+    <!--隐式地向 Spring 容器注册 -->
+    <context:annotation-config/>
+    <!--扫描注解Bean -->
+    <context:component-scan base-package="com.*">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <task:annotation-driven/>  <!-- 定时器开关 -->
+
+    <!-- 统一读取配置文件 -->
+    <!--注：后台相关properties 统一在此读取，否则会造成properties无法正常加载问题 -->
+    <context:property-placeholder
+            location="classpath:/props/datasource.properties,classpath:/props/redis.properties,classpath:/props/config.properties,classpath:/props/quartz.properties,classpath:props/mq.properties"
+            ignore-unresolvable="true"/>
+
+
+
+
+    <!-- quartz-->
+<!--    <bean lazy-init="false" autowire="no" id="schedulerFactoryBean"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="applicationContextSchedulerContextKey" value="applicationContextKey"/>
+    </bean>-->
+
+
+    <!-- 事务管理器对mybatis操作数据库进行事务控制，spring使用jdbc的事务控制类  -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- dataSource在spring-dao.xml中进行了配置 -->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 定义通知 -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- 传播行为 -->
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="create*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="find*" propagation="SUPPORTS"/>
+            <tx:method name="get*" propagation="SUPPORTS"/>
+            <tx:method name="select*" propagation="SUPPORTS"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 定义aop切面 -->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.hafiz.www.service.impl.*.*(..))"/>
+    </aop:config>
+
+    <import resource="spring-mybatis.xml"/>
+    <import resource="spring-redis.xml"/>
+</beans>
